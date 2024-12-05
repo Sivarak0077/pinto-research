@@ -195,16 +195,24 @@ def main():
     columns = shutil.get_terminal_size().columns
 
     # Multiline text for the Meal Planner App
-    text = '''
+    text1 = '''
     Welcome to the Meal Planner App!
     ▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖ ▗▄▖ 
     ▐▌ ▐▌  █  ▐▛▚▖▐▌  █  ▐▌ ▐▌
     ▐▛▀▘   █  ▐▌ ▝▜▌  █  ▐▌ ▐▌
     ▐▌   ▗▄█▄▖▐▌  ▐▌  █  ▝▚▄▞▘
     '''
+    text2 = '''
+    ▗▄▄▖ ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖ ▗▄▖ ▗▄▄▖  ▗▄▄▖▗▖ ▗▖
+    ▐▌ ▐▌▐▌   ▐▌   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌
+    ▐▛▀▚▖▐▛▀▀▘ ▝▀▚▖▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌   ▐▛▀▜▌
+    ▐▌ ▐▌▐▙▄▄▖▗▄▄▞▘▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌
+    '''
 
     # Center each line
-    for line in text.split('\n'):
+    for line in text1.split('\n'):
+        print(line.center(columns))
+    for line in text2.split('\n'):
         print(line.center(columns))
         
     try:
