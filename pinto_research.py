@@ -4,12 +4,24 @@ import numpy as np
 import random
 import warnings
 import shutil
+import sys
+import time
+import itertools
 
 # Suppress specific warnings
-# warnings.filterwarnings("ignore", category=UserWarning)
-# warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
-# from pandas.core.common import SettingWithCopyWarning
- 
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=pd.errors.SettingWithCopyWarning)
+
+def animated_progress_bar(meal_type):
+    columns = shutil.get_terminal_size().columns
+    spinner = itertools.cycle(["|", "/", "-", "\\"])  # Simple spinner animation
+    emojis = itertools.cycle(["🍳", "🍔", "🍕", "🥗", "🌮"])  # Emoji animation
+    for _ in range(10):  # Controls how long the animation runs
+        sys.stdout.write(f"\rGenerating {meal_type} plan {next(emojis)} {next(spinner)}".center(columns))
+        sys.stdout.flush()
+        time.sleep(0.1)  # Adjust speed here
+    sys.stdout.write("\r" + " " * columns)  # Clear the line
+    sys.stdout.flush()
  
 def calculate_bmi(weight, height):
     """Calculate Body Mass Index (BMI)."""
@@ -139,7 +151,7 @@ def user_preferences(food_df, dnc_sat):
 
     # Number of columns
     print("Available attributes".center(shutil.get_terminal_size().columns))
-    divider = "=" * 80
+    divider = "-" * 20
     print(divider.center(shutil.get_terminal_size().columns))
     columns = 3
 
@@ -172,11 +184,15 @@ def user_preferences(food_df, dnc_sat):
         print()
     
     preferences = []
-    print("\nPlease specify your preferences for each meal.")
+    print()
+    print("Please specify your preferences for each meal.".center(shutil.get_terminal_size().columns))
     
     for i in range(1, 4):
-        print(f"\nMeal {i} preferences:")
-        attr_numbers = input(f"Enter the numbers of the attributes you want for meal {i} (comma-separated): ").strip().split(',')
+        print()
+        print(f"Meal {i} preferences:".center(shutil.get_terminal_size().columns))
+        print("Enter the numbers of the attributes you want for this meal (comma-separated):".center(shutil.get_terminal_size().columns))
+        print(" " * (shutil.get_terminal_size().columns // 2 - 5) + "►►►  ", end="")
+        attr_numbers = input().strip().split(',')
         selected_attrs = [attributes[int(num) - 1].strip() for num in attr_numbers if num.isdigit()]
         preferences.append(selected_attrs)
     
@@ -184,10 +200,12 @@ def user_preferences(food_df, dnc_sat):
  
 def display_meal_plan(meal_items, meal_type):
     if meal_items is not None and not meal_items.empty:
-        print(f"\nBest {meal_type} Plan:")
+        padding = (shutil.get_terminal_size().columns - 80) // 2
+        print(animated_progress_bar(meal_type))
+        print(" " * padding + f"Best {meal_type} Plan:")
         for index, row in meal_items.iterrows():
-            print(f"Food: {row['Display_Name']}, Portion: {row['Portion_Default']}, Calories: {row['Calories']:.2f}")
-        print(f"Total Calories for {meal_type}: {meal_items['Calories'].sum():.2f}")
+            print(" " * padding + f"Food: {row['Display_Name']}, Portion: {row['Portion_Default']}, Calories: {row['Calories']:.2f}")
+        print(" " * padding + f"Total Calories for {meal_type}: {meal_items['Calories'].sum():.2f}")
     else:
         print(f"No satisfactory {meal_type} plan found.")
  
@@ -196,7 +214,7 @@ def main():
 
     # Multiline text for the Meal Planner App
     text1 = '''
-    Welcome to the Meal Planner App!
+    Welcome to the Meal Recommender!
     ▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖ ▗▄▖ 
     ▐▌ ▐▌  █  ▐▛▚▖▐▌  █  ▐▌ ▐▌
     ▐▛▀▘   █  ▐▌ ▝▜▌  █  ▐▌ ▐▌
@@ -238,8 +256,14 @@ def main():
         age = int(input())
         print()
         
-        print("Enter your activity level".center(columns))
-        print("1. sedentary 2. lightly active 3. moderately active 4. very active 5. extra active".center(columns))
+        print("Enter your activity level 🏃".center(columns))
+
+        print("1. Little or no_______▗▄▄▄▖__________".center(columns))
+        print("2. Lightly active_____▗▄▄▄▄▄▖________".center(columns))
+        print("3. Moderately active__▗▄▄▄▄▄▄▄▄▖_____".center(columns))
+        print("4. Very active________▗▄▄▄▄▄▄▄▄▄▄▖___".center(columns))
+        print("5. Extra active_______▗▄▄▄▄▄▄▄▄▄▄▄▄▄▄".center(columns))
+
         print(" " * (columns // 2 - 5) + "►►►  ", end="")
         activity_input = input()
         print()
@@ -248,20 +272,34 @@ def main():
             raise ValueError("Invalid activity level number. Please enter a number between 1 and 5.")
  
         bmi = calculate_bmi(weight, height)
-        print(f"BMI: {bmi:.2f}")
  
         w_over_min, w_over_max = calculate_weight_boundaries(height, weight)
-        print(f"W(over-min): {w_over_min:.2f}")
-        print(f"W(over-max): {w_over_max:.2f}")
+        # print(f"W(over-min): {w_over_min:.2f}")
+        # print(f"W(over-max): {w_over_max:.2f}")
  
         bmr = calculate_bmr(gender, weight, height, age)
-        print(f"BMR: {bmr:.2f} calories/day")
  
         dnc = calculate_daily_caloric_needs(bmr, activity_level)
-        print(f"Daily Needed Calories (DNC): {dnc:.2f} calories/day")
- 
-        dnc_saturated = dnc - 500
-        print(f"Calorie needs for the program (DNC saturated): {dnc_saturated:.2f} calories/day")
+
+        padding = (columns - 80) // 2  # Adjust '80' based on the approximate width of the longest line
+
+        print("What's your goal? 1. Maintain Weight 2. Gain Weight 3. Loss Weight".center(columns))
+        print(" " * (columns // 2 - 5) + "►►►  ", end="")
+        goal = input()
+        adjustable = 0
+        if(goal == '2'):
+            adjustable = 500
+        elif(goal == '3'):
+            adjustable = -500
+        dnc_saturated = dnc + adjustable
+        
+        print(" " * padding + "⁃" * 80)
+        print(" " * padding + "BMI" + " " * 24 + f" ►►► {bmi:.2f}")
+        print(" " * padding + "BMR" + " " * 24 + f" ►►► {bmr:.2f} calories/day")
+        print(" " * padding + f"Daily Needed Calories (DNC) ►►► {dnc:.2f} calories/day")
+        print(" " * padding + f"Calorie needs for the program (DNC saturated) ►►► {dnc_saturated:.2f} calories/day")
+        print(" " * padding + "⁃" * 80)
+        print()
  
         meal_plan, food_data = load_model_and_data()
  
@@ -277,14 +315,16 @@ def main():
         lunch_calories = dnc_saturated * 0.4    # 40% for lunch
         dinner_calories = dnc_saturated * 0.5      # 50% for dinner
  
-        print(f"Caloric Targets : {dnc_saturated:.2f} calories/day")
+        # print()
+        # print(f"Caloric Targets ►►► {dnc_saturated:.2f} calories/day".center(columns))
  
         # Dictionary to store meal plans
         meal_plans = {}
         while True:
         # Generate meal plans for breakfast, lunch, and dinner
             for meal_type, calorie_limit in [('Breakfast', breakfast_calories), ('Lunch', lunch_calories), ('Dinner', dinner_calories)]:
-                print(f"\nGenerating {meal_type} plan...")
+                print()
+                # print(f"Generating {meal_type} plan...".center(columns))
                 best_individual = random_walk(filtered_foods_df, calorie_limit)
                 if best_individual:
                     meal_items = filtered_foods_df.iloc[best_individual]
@@ -295,7 +335,9 @@ def main():
             # Display all meal plans together at the end
             for meal_type in ['Breakfast', 'Lunch', 'Dinner']:
                 display_meal_plan(meal_plans[meal_type], meal_type)
-            print("Total Calories for the day:", sum([meal_plans[meal_type]['Calories'].sum() for meal_type in meal_plans if meal_plans[meal_type] is not None]))
+            tcpd = sum([meal_plans[meal_type]['Calories'].sum() for meal_type in meal_plans if meal_plans[meal_type] is not None])
+            print()
+            print(f"Total Calories for the day: {tcpd}".center(columns))
             repeat = input("\nDo you want to generate another meal plan? (y/n): ")
             if repeat != 'y':
                     break  
