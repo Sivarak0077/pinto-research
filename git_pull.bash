@@ -6,3 +6,5 @@ git reset --hard
 
 # pull
 git pull origin main
+
+# that's all
